@@ -4,6 +4,7 @@ from gi.repository import Gtk, Pango, Gdk
 
 from gigsebook import FetchData
 from book_info import BookInfoWindow
+from threading import Thread
 
 EBOOK_FINDER_GLADE_FILE = "ebook_finder.glade"
 #INFO_BOX_GLADE_FILE = "info_box.glade"
@@ -80,6 +81,8 @@ class EbookListWindow:
 
     def __init__(self, title):
 
+        self.allow_input = True
+
         # to draw the root window using glade
         self.builder = Gtk.Builder()
         self.builder.add_from_file(EBOOK_FINDER_GLADE_FILE)
@@ -133,29 +136,50 @@ class EbookListWindow:
     def start_search(self, widget, event):
         
         # 65293 = Return
-        if event.keyval == 65293:
+        if self.allow_input and event.keyval == 65293:
             self.query = self.search_entry.get_text()
 
             if self.query != "":
                 print("Starting search with query: " + self.search_entry.get_text())
+                self.allow_input = False
             else:
                 return
 
-            self.books = FetchData(self.query).data
+            self.search_thread = StartSearch(self.query, self.list_box, self.list_box_row, self.window, self.reset_allow_input)
+            self.search_thread.start()
 
-            self.list_box.remove(self.list_box_row)
-
-            for book in self.books:
-                BookEntry(book, self.list_box, self.window)
-
-            # refresh the window
-            self.window.show_all()
-
+    def reset_allow_input(self):
+        self.allow_input = True
 
     # open info page
     def row_activated(self, list_box, row):
         print(row.get_index())
 
+class StartSearch(Thread):
+
+    def __init__(self, query, list_box, list_box_row, window, reset_allow_input):
+        super().__init__();
+
+        self.query = query
+        self.list_box = list_box
+        self.list_box_row = list_box_row
+        self.window = window
+        self.reset_allow_input = reset_allow_input
+
+    def run(self):
+
+        self.books = FetchData(self.query).data
+
+        self.list_box.remove(self.list_box_row)
+
+        for book in self.books:
+            BookEntry(book, self.list_box, self.window)
+
+        # refresh the window
+        self.window.show_all()
+
+        # allow to search now
+        self.reset_allow_input()
 
 ebookListWindow = EbookListWindow("Ebook Finder")
 Gtk.main()
