@@ -22,6 +22,7 @@
                 <property name="can-focus">True</property>
                 <property name="width-chars">30</property>
                 <property name="max-width-chars">35</property>
+                <property name="truncate-multiline">True</property>
                 <property name="primary-icon-name">edit-find-symbolic</property>
                 <property name="primary-icon-activatable">False</property>
                 <property name="primary-icon-sensitive">False</property>

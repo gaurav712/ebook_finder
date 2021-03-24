@@ -130,7 +130,7 @@ class EbookListWindow:
 
     # pop up search_bar
     def reveal_search_bar(self, window, event):
-        self.search_bar.handle_event(event)
+        return self.search_bar.handle_event(event)
 
     # initiate search
     def start_search(self, widget, event):
